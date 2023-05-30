@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  scheduled_run:
+    name: scheduled_run
+    runs-on: ubuntu-latest
+    env:
+      SNOWSQL_PWD: ${{ secrets.DBT_SNOWFLAKE_PW }}
+      SNOWSQL_ACCOUNT: ${{ secrets.DBT_SNOWFLAKE_ACCOUNT }}
+      SNOWSQL_USER: ${{ secrets.DBT_SNOWFLAKE_USERNAME }}
+      SNOWSQL_DATABASE: ${{ secrets.DBT_SNOWFLAKE_DATABASE }}
+      SNOWSQL_SCHEMA: ${{ secrets.DBT_SNOWFLAKE_SCHEMA }}
+      SNOWSQL_ROLE: ${{ secrets.DBT_SNOWFLAKE_ROLE }}
+      SNOWSQL_WAREHOUSE: ${{ secrets.DBT_SNOWFLAKE_WAREHOUSE }}
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@master
+
+      - uses: actions/setup-python@v1
+        with:
+          python-version: "3.9.x"
+      
+      - name: Installing dbt and Its Plugins
+        run: |
+          pip install dbt-core 
+          pip install dbt-snowflake
+
+      - name: Runing dbt
+        run: |
+          dbt --version
+          dbt deps --project-dir dbt_first
+          dbt run --project-dir dbt_first
+          dbt test --project-dir dbt_first
